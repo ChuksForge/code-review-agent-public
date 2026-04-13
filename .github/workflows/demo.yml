@@ -1,0 +1,97 @@
+name: Demo — Code Review Agent
+
+on:
+  pull_request:
+    paths:
+      - 'demo/sample_repo/**'
+      - 'evals/cases/**'
+  push:
+    branches: [main]
+    paths:
+      - 'demo/sample_repo/**'
+  workflow_dispatch:  # allow manual trigger from GitHub UI
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  demo-review:
+    runs-on: ubuntu-latest
+    name: Run Code Review on Sample Repo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          # Optional static tools — graceful fallback if unavailable
+          pip install pylint mypy || true
+          pip install semgrep || true
+
+      - name: Run demo review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python demo/run_demo.py --path demo/sample_repo --verbose
+
+      - name: Post results as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'outputs/example_review.md';
+
+            if (!fs.existsSync(reportPath)) {
+              console.log('No review output found — skipping comment');
+              return;
+            }
+
+            const report = fs.readFileSync(reportPath, 'utf8');
+            const maxLen = 60000;
+            const body = report.length > maxLen
+              ? report.slice(0, maxLen) + '\n\n_[Report truncated]_'
+              : report;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('🔍 Code Review Report')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Upload review artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: review-output
+          path: outputs/
+          retention-days: 14

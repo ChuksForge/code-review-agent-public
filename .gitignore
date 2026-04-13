@@ -1,0 +1,52 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Generated outputs — keep example_review.* and eval_results.json committed
+# but ignore any personal/live runs
+outputs/review.json
+outputs/review.md
+outputs/eval_metrics_local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tool caches
+.mypy_cache/
+.pylint.d/
+.ruff_cache/
+.semgrep/
+.semgrep_logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# tree-sitter build artifacts
+*.so
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Temp files
+tmp/
+*.tmp
+*.log

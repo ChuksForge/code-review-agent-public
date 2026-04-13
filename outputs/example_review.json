@@ -1,0 +1,172 @@
+{
+  "total_issues_found": 10,
+  "issues_after_critic": 9,
+  "final_suggestions": [
+    {
+      "issue_id": "PLAN-06ABEA6C",
+      "title": "Fix SQL injection with parameterized query",
+      "category": "security",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 21,
+      "line_end": 21,
+      "original_code": "query = f\"SELECT * FROM users WHERE id = '{user_id}'\"",
+      "suggested_fix": "query = \"SELECT * FROM users WHERE id = %s\"\ncursor.execute(query, (user_id,))",
+      "explanation": "The original code uses f-string formatting to directly insert user input into SQL, allowing attackers to inject malicious SQL code. The fix uses parameterized queries where the SQL engine handles parameter binding safely, preventing injection attacks by treating user input as data rather than executable code.",
+      "severity_score": 9.5,
+      "priority": "critical",
+      "impact_summary": "Without this fix, attackers can execute arbitrary SQL commands including data theft, deletion, or complete database compromise.",
+      "references": [
+        "OWASP A03:2021",
+        "CWE-89"
+      ]
+    },
+    {
+      "issue_id": "PLAN-05099322",
+      "title": "Replace bare except with specific exception handling",
+      "category": "logic_bug",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 42,
+      "line_end": 45,
+      "original_code": "except:\n        # \u274c BUG: Bare except swallows KeyboardInterrupt, network errors,\n        #         and everything else \u2014 caller gets no signal on failure\n        return 0.0",
+      "suggested_fix": "except (requests.RequestException, json.JSONDecodeError, KeyError) as e:\n        # Handle specific API-related errors while allowing system signals\n        print(f\"Error fetching price: {e}\")\n        return 0.0",
+      "explanation": "The bare except clause catches ALL exceptions including KeyboardInterrupt and SystemExit, preventing proper program termination and masking critical system signals. The fix catches only the specific exceptions that can occur during API calls (network errors, JSON parsing errors, and missing 'price' key) while allowing system interrupts to propagate normally.",
+      "severity_score": 8.5,
+      "priority": "critical",
+      "impact_summary": "Without this fix, users cannot interrupt the program with Ctrl+C and all API errors are silently masked, making debugging impossible and potentially causing incorrect price calculations.",
+      "references": [
+        "PEP 8",
+        "OWASP A09:2021"
+      ]
+    },
+    {
+      "issue_id": "PLAN-62B15E88",
+      "title": "Replace undefined SECRET_KEY with environment variable",
+      "category": "security",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 38,
+      "line_end": 38,
+      "original_code": "headers={\"Authorization\": f\"Bearer {SECRET_KEY}\"},",
+      "suggested_fix": "headers={\"Authorization\": f\"Bearer {os.environ.get('SECRET_KEY', '')}\"},",
+      "explanation": "The original code references SECRET_KEY which is undefined, causing a NameError at runtime. The fix retrieves the secret key from environment variables using os.environ.get(), which prevents runtime errors and follows security best practices by keeping sensitive data out of source code.",
+      "severity_score": 8.0,
+      "priority": "high",
+      "impact_summary": "Without this fix, the application will crash with NameError when this code path is executed, causing service downtime.",
+      "references": [
+        "OWASP A02:2021",
+        "CWE-798"
+      ]
+    },
+    {
+      "issue_id": "PLAN-46969171",
+      "title": "Replace mutable default argument with None",
+      "category": "logic_bug",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 26,
+      "line_end": 26,
+      "original_code": "def add_to_cart(item: str, cart=[]):",
+      "suggested_fix": "def add_to_cart(item: str, cart=None):\n    if cart is None:\n        cart = []\n    cart.append(item)\n    return cart",
+      "explanation": "The original code uses a mutable list [] as a default argument, which creates a single shared list object that persists across all function calls. This causes items to accumulate unexpectedly when the function is called multiple times without providing a cart parameter. The fix uses None as the default and creates a new empty list inside the function when needed, ensuring each call gets its own independent cart.",
+      "severity_score": 7.0,
+      "priority": "high",
+      "impact_summary": "Users would experience data contamination where items added in separate shopping sessions would unexpectedly appear together, creating serious business logic errors.",
+      "references": [
+        "Python FAQ - Why do default arguments get mutated?",
+        "PEP 3107"
+      ]
+    },
+    {
+      "issue_id": "PLAN-22067536",
+      "title": "Remove redundant nested loop in product matching",
+      "category": "logic_bug",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 52,
+      "line_end": 56,
+      "original_code": "for i in range(len(products)):\n        for j in range(len(products)):\n            if i != j and products[i] == target:\n                if products[i] not in matches:\n                    matches.append(products[i])",
+      "suggested_fix": "for i in range(len(products)):\n        if products[i] == target:\n            if products[i] not in matches:\n                matches.append(products[i])",
+      "explanation": "The original code uses a pointless nested loop where the inner loop variable 'j' is unused except for an unnecessary i != j check. The product matching logic only needs to iterate through products once to find matches with the target. The nested structure creates O(n\u00b2) complexity when O(n) is sufficient, and the i != j condition serves no purpose in product matching.",
+      "severity_score": 6.5,
+      "priority": "medium",
+      "impact_summary": "Performance degrades quadratically with product count, causing unnecessary CPU usage and potential timeout issues in production with large product catalogs.",
+      "references": [
+        "CWE-407"
+      ]
+    },
+    {
+      "issue_id": "PLAN-C7A4F945",
+      "title": "Add missing sqlite3 import for type annotation",
+      "category": "type_error",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 17,
+      "line_end": 17,
+      "original_code": "def get_user(user_id: str, conn: sqlite3.Connection):",
+      "suggested_fix": "import sqlite3\n\ndef get_user(user_id: str, conn: sqlite3.Connection):",
+      "explanation": "The original code references sqlite3.Connection in a type annotation without importing the sqlite3 module. Python evaluates type annotations at runtime (unless using `from __future__ import annotations`), causing a NameError when the function is defined. Adding the import statement resolves the undefined name error.",
+      "severity_score": 6.0,
+      "priority": "high",
+      "impact_summary": "Without this fix, the application will crash with a NameError when the module loads, preventing any functionality from working.",
+      "references": [
+        "PEP 484",
+        "PEP 526"
+      ]
+    },
+    {
+      "issue_id": "PLAN-DFBC5718",
+      "title": "Add missing requests import",
+      "category": "type_error",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 36,
+      "line_end": 36,
+      "original_code": "response = requests.get(",
+      "suggested_fix": "import requests\n\ndef fetch_user_data(user_id):",
+      "explanation": "The original code uses the requests module without importing it, which causes a NameError at runtime. Adding 'import requests' at the top of the file makes the requests library available for use in the fetch_user_data function.",
+      "severity_score": 6.0,
+      "priority": "high",
+      "impact_summary": "Without this import, the application will crash with a NameError when attempting to make HTTP requests, breaking core functionality.",
+      "references": [
+        "PEP 8"
+      ]
+    },
+    {
+      "issue_id": "PLAN-CF138576",
+      "title": "Add safe dictionary access for 'price' field",
+      "category": "type_error",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 41,
+      "line_end": 41,
+      "original_code": "return response.json()[\"price\"]",
+      "suggested_fix": "price_data = response.json()\nif 'price' not in price_data:\n    raise ValueError(f\"Price data not found in API response for {symbol}\")\nreturn price_data[\"price\"]",
+      "explanation": "The original code directly accesses response.json()['price'] without checking if the 'price' key exists, causing a KeyError if the API response structure is unexpected. The fix validates the response structure before accessing the field and raises a more descriptive ValueError with context about which symbol failed.",
+      "severity_score": 5.5,
+      "priority": "medium",
+      "impact_summary": "Without this fix, missing price data will cause silent failures or generic exceptions that make debugging API integration issues difficult.",
+      "references": [
+        "OWASP A09:2021"
+      ]
+    },
+    {
+      "issue_id": "PLAN-B3E5D5CF",
+      "title": "Replace O(n\u00b2) nested loops with O(n) single loop",
+      "category": "performance",
+      "file_path": "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py",
+      "line_start": 52,
+      "line_end": 56,
+      "original_code": "for i in range(len(products)):\n        for j in range(len(products)):\n            if i != j and products[i] == target:\n                if products[i] not in matches:\n                    matches.append(products[i])",
+      "suggested_fix": "for i in range(len(products)):\n        if products[i] == target:\n            if products[i] not in matches:\n                matches.append(products[i])",
+      "explanation": "The original code uses unnecessary nested loops where the inner loop variable 'j' is never used in the logic. The condition 'products[i] == target' only depends on 'i', making the inner loop redundant. The fix removes the nested structure, reducing time complexity from O(n\u00b2) to O(n) while maintaining identical functionality.",
+      "severity_score": 4.0,
+      "priority": "medium",
+      "impact_summary": "Application performance will degrade quadratically with input size, causing slow response times and poor user experience on large datasets.",
+      "references": [
+        "Big O notation performance optimization"
+      ]
+    }
+  ],
+  "summary": "Found 9 actionable issues (3 logic_bug, 1 performance, 2 security, 3 type_error). Planner identified 10 potential issues; Critic filtered to 9. \u26a0\ufe0f  2 CRITICAL issue(s) require immediate attention. \ud83d\udd34 4 HIGH priority issue(s).",
+  "files_reviewed": [
+    "C:\\Users\\HomePC\\code-review-agent-public\\demo\\sample_repo\\app.py"
+  ],
+  "tools_used": [
+    "pylint",
+    "ast"
+  ]
+}

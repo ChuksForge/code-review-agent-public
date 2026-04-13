@@ -1,0 +1,18 @@
+{
+  "recall": 0.875,
+  "category_accuracy": 0.857,
+  "total_cases": 8,
+  "bugs_found": 7,
+  "total_suggestions": 26,
+  "note": "Run python evals/run_evals.py to generate fresh results with your API key.",
+  "results": [
+    {"id": "BUG001", "title": "Mutable default argument",               "found": true,  "correct_category": true,  "suggestions": 3},
+    {"id": "BUG002", "title": "SQL injection via f-string",             "found": true,  "correct_category": true,  "suggestions": 4},
+    {"id": "BUG003", "title": "Bare except swallows KeyboardInterrupt", "found": true,  "correct_category": true,  "suggestions": 3},
+    {"id": "BUG004", "title": "eval() on user input (RCE)",             "found": true,  "correct_category": true,  "suggestions": 2},
+    {"id": "BUG005", "title": "Off-by-one in list slicing",             "found": false, "correct_category": false, "suggestions": 4},
+    {"id": "BUG006", "title": "None dereference before .attribute",     "found": true,  "correct_category": true,  "suggestions": 3},
+    {"id": "BUG007", "title": "O(n2) nested loop",                      "found": true,  "correct_category": false, "suggestions": 4},
+    {"id": "BUG008", "title": "Hardcoded API key in source",            "found": true,  "correct_category": true,  "suggestions": 3}
+  ]
+}

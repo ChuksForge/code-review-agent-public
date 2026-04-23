@@ -201,21 +201,23 @@ The production system extends this open core with additional reliability, calibr
 
 ---
 
-## Working With Me
+## Working With Us
 
 If you're building AI systems or want to integrate reliable LLM-based code review into your workflow, feel free to reach out.
 
-I work on:
+We work on:
 - LLM evaluation and reliability systems
 - Multi-agent architectures
 - AI-assisted developer tooling
 
 ---
 
-Built by [ChuksForge](https://chuksforge.github.io)
-[chuksforge.github.io](https://chuksforge.github.io)
-[GitHub](https://github.com/ChuksForge)
-[Twitter/X](https://x.com/chuksforge)
+## Built by ChuksForge AI Solutions Ltd.
+
+Production-grade AI agents, tools, and applications.
+
+**Portfolio:** [chuksforge.github.io](https://chuksforge.github.io)
+**GitHub:** [@ChuksForge](https://github.com/ChuksForge) · **Email:** [chuksforge@gmail.com](mailto:chuksforge@gmail.com) **Telegram:** [@ChuksForge](https://t.me/ChuksForge)
 
 ---
 
